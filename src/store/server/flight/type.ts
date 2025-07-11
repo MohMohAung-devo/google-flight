@@ -43,3 +43,26 @@ export interface GetNearbyAirportsResponse {
     recent: AirportSuggestion[];
   };
 }
+
+export interface Flight {
+  id: string;
+  airline: string;
+  price: number;
+  departureTime: string;
+  arrivalTime: string;
+  duration: string;
+  stops: number;
+  departureAirport: string;
+  arrivalAirport: string;
+}
+
+export interface FlightSearchParams {
+  originSkyId: string;
+  destinationSkyId: string;
+  originEntityId: string;
+  destinationEntityId: string;
+  cabinClass: string;
+  adults: number;
+  departureDate?: string;
+  returnDate?: string;
+}

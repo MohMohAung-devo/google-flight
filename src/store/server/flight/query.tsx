@@ -1,6 +1,6 @@
 import { API } from "../../../utilis/axios";
 import { useQuery } from "@tanstack/react-query";
-import type { GetNearbyAirportsResponse } from "./type";
+import type { FlightSearchParams, GetNearbyAirportsResponse } from "./type";
 
 type AirportData = GetNearbyAirportsResponse["data"];
 const getNearByAirports = async (): Promise<AirportData> => {
@@ -40,7 +40,7 @@ export const useSearchAirPorts = () => {
     queryKey: ["searchAirPorts"],
     queryFn: getSearchAirPorts,
     staleTime: Infinity,
-    gcTime: Infinity, 
+    gcTime: Infinity,
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
     refetchOnMount: false,
@@ -48,8 +48,6 @@ export const useSearchAirPorts = () => {
     retryDelay: 5000,
   });
 };
-
-
 
 interface Flight {
   id: string;
@@ -68,7 +66,6 @@ interface FlightSearchResponse {
     count: number;
   };
 }
-
 
 const searchFlights = async (params: {
   originSkyId: string;
@@ -120,24 +117,30 @@ interface FlightSearchResponse {
     count?: number;
   };
 }
-export const useFlightSearch = (searchParams: {
-  originSkyId: string;
-  destinationSkyId: string;
-  originEntityId: string;
-  destinationEntityId: string;
-  enabled?: boolean;
-}) => {
+export const useFlightSearch = (
+  searchParams: FlightSearchParams & { enabled?: boolean }
+) => {
   return useQuery<Flight[], Error>({
     queryKey: ["search-flight", searchParams],
     queryFn: async () => {
-      const response = await searchFlights(searchParams);
-      return response.data; 
+      const response = await API.get("/flights/searchFlights", {
+        params: {
+          originSkyId: searchParams.originSkyId,
+          destinationSkyId: searchParams.destinationSkyId,
+          originEntityId: searchParams.originEntityId,
+          destinationEntityId: searchParams.destinationEntityId,
+          cabinClass: searchParams.cabinClass,
+          adults: searchParams.adults,
+          departureDate: searchParams.departureDate,
+          returnDate: searchParams.returnDate,
+          currency: "USD",
+          market: "en-US",
+        },
+      });
+      return response.data.data;
     },
-    staleTime: 1000 * 60 * 5,
-    gcTime: 1000 * 60 * 10,
     enabled: searchParams.enabled,
-    refetchOnWindowFocus: false,
-    retry: 1,
-    retryDelay: 3000,
+    staleTime: 1000 * 60 * 5, // 5 minutes
+    retry: 2,
   });
 };
